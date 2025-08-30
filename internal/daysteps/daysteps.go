@@ -2,6 +2,7 @@ package daysteps
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
@@ -17,18 +18,23 @@ const (
 func parsePackage(data string) (int, time.Duration, error) {
 	parts := strings.Split(data, ",")
 	if len(parts) != 2 {
-		return 0, 0, strconv.ErrSyntax
+		return 0, 0, fmt.Errorf("некорректный формат данных: %q", data)
 	}
+
 	numSteps, err := strconv.Atoi(parts[0])
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, fmt.Errorf("некорректное количество шагов: %v", parts[0])
 	}
 	if numSteps <= 0 {
-		return 0, 0, err
+		return 0, 0, fmt.Errorf("некорректное количество шагов: %d", numSteps)
 	}
+
 	timeDur, err := time.ParseDuration(parts[1])
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, fmt.Errorf("некорректная продолжительность: %v", parts[1])
+	}
+	if timeDur <= 0 {
+		return 0, 0, fmt.Errorf("некорректная продолжительность: %v", parts[1])
 	}
 
 	return numSteps, timeDur, nil
@@ -37,20 +43,25 @@ func parsePackage(data string) (int, time.Duration, error) {
 func DayActionInfo(data string, weight, height float64) string {
 	stepCount, timeCount, err := parsePackage(data)
 	if err != nil {
+		log.Println("Ошибка в данных:", err)
 		return ""
 	}
-	if stepCount <= 0 {
-		return ""
-	}
-	distance := float64(stepCount) * stepLength
-	distance = distance / mInKm
-	ciloCount, err := sc.WalkingSpentCalories(stepCount, weight, height, timeCount)
+
+	distance := float64(stepCount) * stepLength / mInKm
+
+	caloCount, err := sc.WalkingSpentCalories(stepCount, weight, height, timeCount)
 	if err != nil {
+		log.Println("Ошибка расчёта калорий:", err)
 		return ""
 	}
-	result := fmt.Sprintf(`Количество шагов: %d.
-Дистанция составила %.2f км.
-Вы сожгли %.2f ккал.`, stepCount, distance, ciloCount)
+
+	// ⚠️ формат под тесты: каждая строка с новой строки + \n в конце
+	result := fmt.Sprintf(
+		"Количество шагов: %d.\nДистанция составила %.2f км.\nВы сожгли %.2f ккал.\n",
+		stepCount,
+		distance,
+		caloCount,
+	)
 
 	return result
 }
