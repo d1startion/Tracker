@@ -7,7 +7,6 @@ import (
 	"time"
 )
 
-// Основные константы, необходимые для расчетов.
 const (
 	mInKm                      = 1000 // количество метров в километре.
 	minInH                     = 60   // количество минут в часе.
@@ -15,9 +14,8 @@ const (
 	walkingCaloriesCoefficient = 0.5  // коэффициент для расчета калорий при ходьбе
 )
 
-// parseTraining парсит строку формата "3456,Ходьба,3h00m"
 func parseTraining(data string) (int, string, time.Duration, error) {
-	parts := strings.Split(data, ",") // разбиваем по запятой
+	parts := strings.Split(data, ",")
 	if len(parts) != 3 {
 		return 0, "", 0, fmt.Errorf("неверный формат данных")
 	}
@@ -31,18 +29,11 @@ func parseTraining(data string) (int, string, time.Duration, error) {
 	if steps <= 0 {
 		return 0, "", 0, fmt.Errorf("неверное количество шагов - должно быть > 0")
 	}
-
-	// вид активности
 	activity := parts[1]
-
-	// продолжительность
 	durationStr := parts[2]
-
-	// запрет пробелов внутри продолжительности
 	if strings.Contains(durationStr, " ") {
 		return 0, "", 0, fmt.Errorf("неверная продолжительность - пробел недопустим")
 	}
-
 	duration, err := time.ParseDuration(durationStr)
 	if err != nil {
 		return 0, "", 0, fmt.Errorf("неверная продолжительность")
@@ -50,7 +41,6 @@ func parseTraining(data string) (int, string, time.Duration, error) {
 	if duration <= 0 {
 		return 0, "", 0, fmt.Errorf("неверная продолжительность - должно быть > 0")
 	}
-
 	return steps, activity, duration, nil
 }
 func distance(steps int, height float64) float64 {
